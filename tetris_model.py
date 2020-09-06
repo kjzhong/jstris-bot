@@ -3,6 +3,7 @@
 
 import random
 
+
 class Shape(object):
     shapeNone = 0
     shapeI = 1
@@ -67,6 +68,7 @@ class Shape(object):
 
 class BoardData(object):
     width = 10
+    #height = 20
     height = 22
 
     def __init__(self):
@@ -160,10 +162,12 @@ class BoardData(object):
         newY = BoardData.height - 1
         lines = 0
         for y in range(BoardData.height - 1, -1, -1):
-            blockCount = sum([1 if self.backBoard[x + y * BoardData.width] > 0 else 0 for x in range(BoardData.width)])
+            blockCount = sum([1 if self.backBoard[x + y * BoardData.width]
+                              > 0 else 0 for x in range(BoardData.width)])
             if blockCount < BoardData.width:
                 for x in range(BoardData.width):
-                    newBackBoard[x + newY * BoardData.width] = self.backBoard[x + y * BoardData.width]
+                    newBackBoard[x + newY *
+                                 BoardData.width] = self.backBoard[x + y * BoardData.width]
                 newY -= 1
             else:
                 lines += 1

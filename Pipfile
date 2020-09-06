@@ -10,6 +10,8 @@ autopep8 = "*"
 [packages]
 numpy = "*"
 pyqt5 = "*"
+pillow = "*"
+pyautogui = "*"
 
 [requires]
 python_version = "3.8"

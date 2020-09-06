@@ -3,3 +3,5 @@ __pycache__
 tmp.log
 **.prf
 **.DS_Store
+**.old
+.vscode
