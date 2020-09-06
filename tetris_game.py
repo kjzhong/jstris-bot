@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import sys, random
+import sys
+import random
 from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor
@@ -10,6 +11,7 @@ from tetris_model import BOARD_DATA, Shape
 from tetris_ai import TETRIS_AI
 
 # TETRIS_AI = None
+
 
 class Tetris(QMainWindow):
     def __init__(self):
@@ -23,7 +25,7 @@ class Tetris(QMainWindow):
 
     def initUI(self):
         self.gridSize = 22
-        self.speed = 10
+        self.speed = 0
 
         self.timer = QBasicTimer()
         self.setFocusPolicy(Qt.StrongFocus)
@@ -50,7 +52,8 @@ class Tetris(QMainWindow):
     def center(self):
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
-        self.move((screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2)
+        self.move((screen.width() - size.width()) // 2,
+                  (screen.height() - size.height()) // 2)
 
     def start(self):
         if self.isPaused:
@@ -116,11 +119,11 @@ class Tetris(QMainWindow):
             return
 
         key = event.key()
-        
+
         if key == Qt.Key_P:
             self.pause()
             return
-            
+
         if self.isPaused:
             return
         elif key == Qt.Key_Left:
@@ -175,7 +178,8 @@ class SidePanel(QFrame):
 
         val = BOARD_DATA.nextShape.shape
         for x, y in BOARD_DATA.nextShape.getCoords(0, 0, -minY):
-            drawSquare(painter, x * self.gridSize + dx, y * self.gridSize + dy, val, self.gridSize)
+            drawSquare(painter, x * self.gridSize + dx, y *
+                       self.gridSize + dy, val, self.gridSize)
 
 
 class Board(QFrame):
@@ -184,7 +188,8 @@ class Board(QFrame):
 
     def __init__(self, parent, gridSize):
         super().__init__(parent)
-        self.setFixedSize(gridSize * BOARD_DATA.width, gridSize * BOARD_DATA.height)
+        self.setFixedSize(gridSize * BOARD_DATA.width,
+                          gridSize * BOARD_DATA.height)
         self.gridSize = gridSize
         self.initBoard()
 
@@ -199,12 +204,14 @@ class Board(QFrame):
         for x in range(BOARD_DATA.width):
             for y in range(BOARD_DATA.height):
                 val = BOARD_DATA.getValue(x, y)
-                drawSquare(painter, x * self.gridSize, y * self.gridSize, val, self.gridSize)
+                drawSquare(painter, x * self.gridSize, y *
+                           self.gridSize, val, self.gridSize)
 
         # Draw current shape
         for x, y in BOARD_DATA.getCurrentShapeCoord():
             val = BOARD_DATA.currentShape.shape
-            drawSquare(painter, x * self.gridSize, y * self.gridSize, val, self.gridSize)
+            drawSquare(painter, x * self.gridSize, y *
+                       self.gridSize, val, self.gridSize)
 
         # Draw a border
         painter.setPen(QColor(0x777777))
