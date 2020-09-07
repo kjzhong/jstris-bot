@@ -25,7 +25,8 @@ class Tetris(QMainWindow):
 
     def initUI(self):
         self.gridSize = 22
-        self.speed = 100
+        # This controls the game speed (lower is faster)
+        self.speed = 0
 
         self.timer = QBasicTimer()
         self.setFocusPolicy(Qt.StrongFocus)
@@ -146,7 +147,6 @@ def drawSquare(painter, x, y, val, s):
 
     if val == 0:
         return
-
     color = QColor(colorTable[val])
     painter.fillRect(x + 1, y + 1, s - 2, s - 2, color)
 
@@ -178,7 +178,7 @@ class SidePanel(QFrame):
 
         val = BOARD_DATA.nextShape.shape
         for x, y in BOARD_DATA.nextShape.getCoords(0, 0, -minY):
-            drawSquare(painter, x * self.gridSize + dx, y *
+            drawSquare(painter, int(x * self.gridSize + dx), y *
                        self.gridSize + dy, val, self.gridSize)
 
 
@@ -204,13 +204,13 @@ class Board(QFrame):
         for x in range(BOARD_DATA.width):
             for y in range(BOARD_DATA.height):
                 val = BOARD_DATA.getValue(x, y)
-                drawSquare(painter, x * self.gridSize, y *
+                drawSquare(painter, int(x * self.gridSize), y *
                            self.gridSize, val, self.gridSize)
 
         # Draw current shape
         for x, y in BOARD_DATA.getCurrentShapeCoord():
             val = BOARD_DATA.currentShape.shape
-            drawSquare(painter, x * self.gridSize, y *
+            drawSquare(painter, int(x * self.gridSize), y *
                        self.gridSize, val, self.gridSize)
 
         # Draw a border

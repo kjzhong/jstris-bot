@@ -40,13 +40,17 @@ class TetrisAI(object):
             for x0 in range(-minX, BOARD_DATA.width - maxX):
                 board = self.calcStep1Board(d0, x0)
                 for d1 in d1Range:
-                    minX, maxX, _, _ = BOARD_DATA.nextShape.getBoundingOffsets(d1)
-                    dropDist = self.calcNextDropDist(board, d1, range(-minX, BOARD_DATA.width - maxX))
+                    minX, maxX, _, _ = BOARD_DATA.nextShape.getBoundingOffsets(
+                        d1)
+                    dropDist = self.calcNextDropDist(
+                        board, d1, range(-minX, BOARD_DATA.width - maxX))
                     for x1 in range(-minX, BOARD_DATA.width - maxX):
-                        score = self.calculateScore(np.copy(board), d1, x1, dropDist)
+                        score = self.calculateScore(
+                            np.copy(board), d1, x1, dropDist)
                         if not strategy or strategy[2] < score:
                             strategy = (d0, x0, score)
-        print("===", datetime.now() - t1)
+        # print("===", datetime.now() - t1)
+        print(strategy)
         return strategy
 
     def calcNextDropDist(self, data, d0, xRange):
@@ -64,7 +68,8 @@ class TetrisAI(object):
         return res
 
     def calcStep1Board(self, d0, x0):
-        board = np.array(BOARD_DATA.getData()).reshape((BOARD_DATA.height, BOARD_DATA.width))
+        board = np.array(BOARD_DATA.getData()).reshape(
+            (BOARD_DATA.height, BOARD_DATA.width))
         self.dropDown(board, BOARD_DATA.currentShape, d0, x0)
         return board
 
@@ -90,7 +95,8 @@ class TetrisAI(object):
         width = BOARD_DATA.width
         height = BOARD_DATA.height
 
-        self.dropDownByDist(step1Board, BOARD_DATA.nextShape, d1, x1, dropDist[x1])
+        self.dropDownByDist(
+            step1Board, BOARD_DATA.nextShape, d1, x1, dropDist[x1])
         # print(datetime.now() - t1)
 
         # Term 1: lines to be removed
@@ -127,11 +133,13 @@ class TetrisAI(object):
         if len(roofY) <= 0:
             stdY = 0
         else:
-            stdY = math.sqrt(sum([y ** 2 for y in roofY]) / len(roofY) - (sum(roofY) / len(roofY)) ** 2)
+            stdY = math.sqrt(sum([y ** 2 for y in roofY]) /
+                             len(roofY) - (sum(roofY) / len(roofY)) ** 2)
         if len(roofDy) <= 0:
             stdDY = 0
         else:
-            stdDY = math.sqrt(sum([y ** 2 for y in roofDy]) / len(roofDy) - (sum(roofDy) / len(roofDy)) ** 2)
+            stdDY = math.sqrt(sum([y ** 2 for y in roofDy]) /
+                              len(roofDy) - (sum(roofDy) / len(roofDy)) ** 2)
 
         absDy = sum([abs(x) for x in roofDy])
         maxDy = max(roofY) - min(roofY)
@@ -144,4 +152,3 @@ class TetrisAI(object):
 
 
 TETRIS_AI = TetrisAI()
-

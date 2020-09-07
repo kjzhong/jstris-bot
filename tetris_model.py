@@ -78,6 +78,7 @@ class BoardData(object):
         self.currentY = -1
         self.currentDirection = 0
         self.currentShape = Shape()
+        # This line controls the first shape, and createNewPiece controls all pieces afterwards
         self.nextShape = Shape(random.randint(1, 7))
 
         self.shapeStat = [0] * 8
@@ -99,6 +100,7 @@ class BoardData(object):
             self.currentY = -minY
             self.currentDirection = 0
             self.currentShape = self.nextShape
+            # This line controls all shapes following the first shape
             self.nextShape = Shape(random.randint(1, 7))
             result = True
         else:
