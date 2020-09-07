@@ -1,7 +1,7 @@
 __pycache__
-.idea
 tmp.log
 **.prf
 **.DS_Store
 **.old
 .vscode
+debug.log

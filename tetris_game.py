@@ -1,14 +1,16 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
 import sys
-import random
+
 from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor
-
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 from tetris_model import BOARD_DATA, Shape
 from tetris_ai import TETRIS_AI
+from tetris_screenshotter import wait_go, identify_next, identify_first
+
 
 # TETRIS_AI = None
 
@@ -26,7 +28,7 @@ class Tetris(QMainWindow):
     def initUI(self):
         self.gridSize = 22
         # This controls the game speed (lower is faster)
-        self.speed = 0
+        self.speed = 200
 
         self.timer = QBasicTimer()
         self.setFocusPolicy(Qt.StrongFocus)
@@ -45,7 +47,8 @@ class Tetris(QMainWindow):
 
         self.center()
         self.setWindowTitle('Tetris')
-        self.show()
+        # This shows the pygame window
+        # self.show()
 
         self.setFixedSize(self.tboard.width() + self.sidePanel.width(),
                           self.sidePanel.height() + self.statusbar.height())
@@ -90,22 +93,70 @@ class Tetris(QMainWindow):
 
     def timerEvent(self, event):
         if event.timerId() == self.timer.timerId():
+            # Pieces in the game are created in different positions and rotations than in jstris
+            # I fix rotation, then fix position
+            # Number of times we need to rotate right IN JSTRIS to match the game
+            extra_rot = {
+                'L': 1,
+                'I': 1,
+                'T': 1,
+                'S': 0,
+                'Z': 0,
+                'O': 0,
+                'J': 3
+            }
+            # Number of times you need to move right IN JSTRIS to match the game
+            extra_position = {
+                'I': 0,
+                'Z': 1,
+                'J': 1,
+                'O': 1,
+                'L': 1,
+                'T': 1,
+                'S': 1
+            }
+            # Just a dictionary to convert shape numbers back to tetromino pieces
+            shape = {
+                1: 'I',
+                2: 'L',
+                3: 'J',
+                4: 'T',
+                5: 'O',
+                6: 'S',
+                7: 'Z'
+            }
+            # This fixes rotation
+            for i in range(extra_rot[shape[BOARD_DATA.currentShape.shape]]):
+                driver.switch_to.active_element.send_keys(Keys.UP)
+
+            # This fixes position after fixing rotation
+            k = extra_position[shape[BOARD_DATA.currentShape.shape]]
+            # print(f'{k=}, {shape[BOARD_DATA.currentShape.shape]=}')
+            if k < 0:
+                for i in range(-k):
+                    driver.switch_to.active_element.send_keys(Keys.LEFT)
+            if k > 0:
+                for i in range(k):
+                    driver.switch_to.active_element.send_keys(Keys.RIGHT)
+
+            # Complex bug where the next shape was being identified at the wrong time (because of bad integration)
+            # This is a hacky fix
+            BOARD_DATA.nextShape = Shape(identify_next())
+
             if TETRIS_AI and not self.nextMove:
                 self.nextMove = TETRIS_AI.nextMove()
             if self.nextMove:
-                k = 0
-                while BOARD_DATA.currentDirection != self.nextMove[0] and k < 4:
-                    BOARD_DATA.rotateRight()
-                    k += 1
-                k = 0
-                while BOARD_DATA.currentX != self.nextMove[1] and k < 5:
+                while BOARD_DATA.currentDirection != self.nextMove[0]:
+                    BOARD_DATA.rotateRight(driver)
+                while BOARD_DATA.currentX != self.nextMove[1]:
                     if BOARD_DATA.currentX > self.nextMove[1]:
-                        BOARD_DATA.moveLeft()
+                        BOARD_DATA.moveLeft(driver)
                     elif BOARD_DATA.currentX < self.nextMove[1]:
-                        BOARD_DATA.moveRight()
-                    k += 1
-            # lines = BOARD_DATA.dropDown()
-            lines = BOARD_DATA.moveDown()
+                        BOARD_DATA.moveRight(driver)
+
+            # Dropdown is a space input, move down is just waiting for the pieces to fall
+            lines = BOARD_DATA.dropDown(driver)
+            # lines = BOARD_DATA.moveDown()
             self.tboard.score += lines
             if self.lastShape != BOARD_DATA.currentShape:
                 self.nextMove = None
@@ -128,13 +179,13 @@ class Tetris(QMainWindow):
         if self.isPaused:
             return
         elif key == Qt.Key_Left:
-            BOARD_DATA.moveLeft()
+            BOARD_DATA.moveLeft(driver)
         elif key == Qt.Key_Right:
-            BOARD_DATA.moveRight()
+            BOARD_DATA.moveRight(driver)
         elif key == Qt.Key_Up:
-            BOARD_DATA.rotateLeft()
+            BOARD_DATA.rotateLeft(driver)
         elif key == Qt.Key_Space:
-            self.tboard.score += BOARD_DATA.dropDown()
+            self.tboard.score += BOARD_DATA.dropDown(driver)
         else:
             super(Tetris, self).keyPressEvent(event)
 
@@ -184,7 +235,7 @@ class SidePanel(QFrame):
 
 class Board(QFrame):
     msg2Statusbar = pyqtSignal(str)
-    speed = 10
+    speed = 50
 
     def __init__(self, parent, gridSize):
         super().__init__(parent)
@@ -226,6 +277,17 @@ class Board(QFrame):
 
 if __name__ == '__main__':
     # random.seed(32)
+
+    # Create the selenium window and wait for the game to start
+    driver = webdriver.Chrome()
+    driver.maximize_window()
+    driver.get('https://jstris.jezevec10.com/?play=2')
+    wait_go()
+
+    # BOARD_DATA is initialised on import - this resets nextShape once the game starts to get the piece properly
+    BOARD_DATA.nextShape = Shape(identify_first())
+
     app = QApplication([])
     tetris = Tetris()
+
     sys.exit(app.exec_())

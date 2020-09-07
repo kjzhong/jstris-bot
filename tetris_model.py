@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import random
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from tetris_screenshotter import identify_next, identify_first
 
 
 class Shape(object):
@@ -79,8 +81,8 @@ class BoardData(object):
         self.currentDirection = 0
         self.currentShape = Shape()
         # This line controls the first shape, and createNewPiece controls all pieces afterwards
-        self.nextShape = Shape(random.randint(1, 7))
-
+        self.nextShape = Shape(identify_next())
+        self.check()
         self.shapeStat = [0] * 8
 
     def getData(self):
@@ -99,9 +101,10 @@ class BoardData(object):
             self.currentX = 5
             self.currentY = -minY
             self.currentDirection = 0
+            self.check()
             self.currentShape = self.nextShape
             # This line controls all shapes following the first shape
-            self.nextShape = Shape(random.randint(1, 7))
+            self.nextShape = Shape(identify_next())
             result = True
         else:
             self.currentShape = Shape()
@@ -133,31 +136,36 @@ class BoardData(object):
             self.createNewPiece()
         return lines
 
-    def dropDown(self):
+    def dropDown(self, driver):
         while self.tryMoveCurrent(self.currentDirection, self.currentX, self.currentY + 1):
             self.currentY += 1
         self.mergePiece()
         lines = self.removeFullLines()
         self.createNewPiece()
+        driver.switch_to.active_element.send_keys(Keys.SPACE)
         return lines
 
-    def moveLeft(self):
+    def moveLeft(self, driver):
         if self.tryMoveCurrent(self.currentDirection, self.currentX - 1, self.currentY):
             self.currentX -= 1
+            driver.switch_to.active_element.send_keys(Keys.ARROW_LEFT)
 
-    def moveRight(self):
+    def moveRight(self, driver):
         if self.tryMoveCurrent(self.currentDirection, self.currentX + 1, self.currentY):
             self.currentX += 1
+            driver.switch_to.active_element.send_keys(Keys.ARROW_RIGHT)
 
-    def rotateRight(self):
+    def rotateRight(self, driver):
         if self.tryMoveCurrent((self.currentDirection + 1) % 4, self.currentX, self.currentY):
             self.currentDirection += 1
             self.currentDirection %= 4
+            driver.switch_to.active_element.send_keys(Keys.UP)
 
-    def rotateLeft(self):
+    def rotateLeft(self, driver):
         if self.tryMoveCurrent((self.currentDirection - 1) % 4, self.currentX, self.currentY):
             self.currentDirection -= 1
             self.currentDirection %= 4
+            driver.switch_to.active_element.send_keys('z')
 
     def removeFullLines(self):
         newBackBoard = [0] * BoardData.width * BoardData.height
@@ -192,6 +200,25 @@ class BoardData(object):
         self.currentDirection = 0
         self.currentShape = Shape()
         self.backBoard = [0] * BoardData.width * BoardData.height
+
+    def check(self):
+        '''Debugging method to look at what the next shape is'''
+        shape = {
+            0: 'Either broken or first piece',
+            1: 'I',
+            2: 'L',
+            3: 'J',
+            4: 'T',
+            5: 'O',
+            6: 'S',
+            7: 'Z'
+        }
+        try:
+            nextshape = shape[self.nextShape.shape]
+            # print(f"{nextshape=}")
+        except:
+            # print('Next shape is not valid')
+            pass
 
 
 BOARD_DATA = BoardData()

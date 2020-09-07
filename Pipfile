@@ -13,6 +13,7 @@ pyqt5 = "*"
 pillow = "*"
 pyautogui = "*"
 mss = "*"
+selenium = "*"
 
 [requires]
 python_version = "3.8"

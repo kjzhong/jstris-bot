@@ -50,7 +50,6 @@ class TetrisAI(object):
                         if not strategy or strategy[2] < score:
                             strategy = (d0, x0, score)
         # print("===", datetime.now() - t1)
-        print(strategy)
         return strategy
 
     def calcNextDropDist(self, data, d0, xRange):

@@ -1,19 +1,6 @@
 from PIL import Image, ImageGrab
 import pyautogui
-from mss import mss
-
-# Which library should I use?
-
-# Goal of this code is to be able to screenshot then process the next pieces from jstris.
-# The idea is to then feed the "code" of each piece to the nextpiece function in this code, essentially plugging it in
-# If we can grab this right, then the logical flow of the program can be changed to:
-# 1. Read next piece from jstris
-# 2. What is best move?
-# 3. Enter best move in tetris and in jstris
-# 4. Repeat 1-3
-
-# Lets use monitor 1 (my big monitor) in mss
-# The jstris screen is snapped to the right half, with zoom = 100%
+from selenium import webdriver
 
 
 def get_pos():
@@ -24,13 +11,14 @@ def get_pos():
 
 def wait_go():
     '''Waits until Go! appears'''
-    go_x = 2513
-    go_y = 711
+    go_x = 1560
+    go_y = 765
     go_red = 203
-    go_colour = 0
-    while not go_colour == go_red:
+    go_colour = 10
+    while not go_colour in set([i for i in range(go_red-10, go_red + 10)]):
         go_colour = ImageGrab.grab().getpixel((go_x, go_y))[0]
-    print('Found go!')
+    while not go_colour == 0:
+        go_colour = ImageGrab.grab().getpixel((go_x, go_y))[0]
 
 
 def identify_mouse():
@@ -40,8 +28,8 @@ def identify_mouse():
     print(pix)
 
 
-def identify_next():
-    '''Identifies the piece in the next slot'''
+def identify_first():
+    '''Identifies the first piece in jstris based on the top row'''
     colour = {
         (227, 91, 2): 'L',
         (227, 159, 2): 'O',
@@ -51,12 +39,56 @@ def identify_next():
         (89, 177, 1): 'S',
         (175, 41, 138): 'T'}
 
-    # Saves the screenshot as myscreenshot.png for easier debugging
-    im = pyautogui.screenshot('myscreenshot.png', region=(2747, 327, 70, 30))
-    for i in range(70):
-        for j in range(30):
-            if im.getpixel((i, j)) in colour:
-                return (colour[im.getpixel((i, j))])
+    shape = {
+        'I': 1,
+        'L': 2,
+        'J': 3,
+        'T': 4,
+        'O': 5,
+        'S': 6,
+        'Z': 7
+    }
+    left = 1480
+    top = 344
+    width = 120
+    height = 100
 
-                # x = 2747 + i
-                # y = 327 + j
+    im = pyautogui.screenshot(region=(left, top, width, height))
+    for i in range(width):
+        for j in range(height):
+            if im.getpixel((i, j)) in colour:
+                print(f'first shape is {colour[im.getpixel((i, j))]}')
+                return (shape[colour[im.getpixel((i, j))]])
+
+
+def identify_next():
+    '''Identifies the piece in the next slot and returns the corresponding letter'''
+    colour = {
+        (227, 91, 2): 'L',
+        (227, 159, 2): 'O',
+        (215, 15, 55): 'Z',
+        (15, 155, 215): 'I',
+        (33, 65, 198): 'J',
+        (89, 177, 1): 'S',
+        (175, 41, 138): 'T'}
+
+    shape = {
+        'I': 1,
+        'L': 2,
+        'J': 3,
+        'T': 4,
+        'O': 5,
+        'S': 6,
+        'Z': 7
+    }
+
+    left = 1786
+    top = 375
+    width = 70
+    height = 30
+    # Saves the screenshot as next.png for easier debugging
+    im = pyautogui.screenshot(region=(left, top, width, height))
+    for i in range(width):
+        for j in range(height):
+            if im.getpixel((i, j)) in colour:
+                return (shape[colour[im.getpixel((i, j))]])
