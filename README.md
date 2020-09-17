@@ -15,6 +15,3 @@ The goal of this code is to automatically play jstris with a simple AI.
 ## Roadmap
 * Create configuration script
 * Redevelop AI
-
-## Disclosure
-This code builds heavily from the work done by LoveDaisy (https://github.com/LoveDaisy/tetris_game)
